@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report - Passagem de Turno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        select { cursor: pointer; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen pb-10">
+
+<div class="max-w-3xl mx-auto px-4 py-6">
+    <header class="text-center mb-6">
+        <h1 class="text-2xl font-extrabold text-slate-800">📋 Checklist Operacional</h1>
+        <p class="text-slate-500 text-sm">Analista: Ezequiel Miranda </p>
+    </header>
+
+    <div class="space-y-4">
+        <section class="bg-white rounded-xl p-5 card border-t-4 border-slate-800">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Informações Gerais</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input id="responsible" value="Gestor" oninput="updateAll()" class="border rounded-lg p-2 bg-slate-50 text-sm">
+                <input id="journey" value="12:00 🕑 20:20" oninput="updateAll()" class="border rounded-lg p-2 bg-slate-50 text-sm">
+                <input id="handoffTitle" value="Passagem de Turno T2 ⏩ T3" oninput="updateAll()" class="md:col-span-2 border rounded-lg p-2 bg-slate-50 text-sm font-bold">
+            </div>
+        </section>
+
+        <section class="bg-white rounded-xl p-5 card border-t-4 border-blue-500">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-blue-500 mb-4">Status das Rotas</h2>
+            <div id="routesContainer" class="space-y-2">
+                </div>
+        </section>
+
+        <section class="bg-white rounded-xl p-5 card border-t-4 border-emerald-500">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-4">Checklist Operacional</h2>
+            <div id="checklistContainer" class="space-y-2">
+                </div>
+        </section>
+
+        <section class="bg-white rounded-xl p-5 card border-t-4 border-amber-500">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-amber-500 mb-4">Observações</h2>
+            <textarea id="obsT1T2" oninput="updateAll()" placeholder="Notas T1 > T2..." class="w-full border rounded-lg p-2 h-16 mb-2 bg-slate-50 text-sm"></textarea>
+            <textarea id="obsT2T3" oninput="updateAll()" placeholder="Notas T2 > T3..." class="w-full border rounded-lg p-2 h-16 bg-slate-50 text-sm"></textarea>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <button onclick="updateAll()" class="bg-slate-800 text-white font-bold py-3 rounded-xl active:scale-95 transition-all">🔄 Gerar Prévia</button>
+            <button onclick="copyReport()" class="bg-blue-600 text-white font-bold py-3 rounded-xl active:scale-95 transition-all">📄 Copiar</button>
+            <button onclick="openWhatsApp()" class="bg-emerald-600 text-white font-bold py-3 rounded-xl active:scale-95 transition-all">📱 WhatsApp</button>
+        </div>
+
+        <div class="mt-4">
+            <label class="text-xs font-bold text-slate-400 uppercase">Prévia do Relatório:</label>
+            <pre id="preview" class="mt-2 p-4 bg-white rounded-lg border text-[13px] text-slate-700 whitespace-pre-wrap font-sans card"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dados Iniciais
+const routeData = [
+    {code:"EPA4", time:"11:00-13:00"},
+    {code:"EPA5", time:"12:00-14:00"},
+    {code:"ETO4", time:"13:00-15:30"},
+    {code:"EPA7", time:"13:00-15:30"},
+    {code:"EPA3", time:"14:00-16:30"},
+    {code:"EPA8", time:"14:00-16:30"}
+];
+
+const checklistData = [
+    {icon:"🔄", label:"5S da Operação"},
+    {icon:"⛓️", label:"Envio do Forms"},
+    {icon:"📊", label:"Status Pacotes"},
+    {icon:"✉️", label:"QR's Próximo Ciclo AM"},
+    {icon:"🪙", label:"Tratativa Devolução XPT"},
+    {icon:"🧹", label:"Organização Geral"},
+    {icon:"📦", label:"Tratativas Volumoso"},
+    {icon:"🏗️", label:"Baixa de MPs"}
+];
+
+function renderFields() {
+    // Renderizar Rotas
+    const rContainer = document.getElementById('routesContainer');
+    routeData.forEach(r => {
+        const div = document.createElement('div');
+        div.className = "flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-200";
+        div.innerHTML = `
+            <div class="flex flex-col">
+                <span class="text-sm font-bold text-slate-800">🚚 ${r.code}</span>
+                <span class="text-[10px] text-slate-500 uppercase">${r.time}</span>
+            </div>
+            <select class="route-status border rounded p-1 text-sm bg-white" onchange="updateAll()">
+                <option value="✅">✅ OK</option>
+                <option value="🟡">🟡 ATRASADO</option>
+                <option value="❌">❌ CANCELADO</option>
+            </select>
+        `;
+        rContainer.appendChild(div);
+    });
+
+    // Renderizar Checklist
+    const cContainer = document.getElementById('checklistContainer');
+    checklistData.forEach(c => {
+        const div = document.createElement('div');
+        div.className = "flex items-center justify-between p-2 border-b border-slate-100 last:border-0";
+        div.innerHTML = `
+            <div class="flex items-center gap-2 text-sm text-slate-700">
+                <span>${c.icon}</span>
+                <span>${c.label}</span>
+            </div>
+            <select class="check-status border rounded p-1 text-sm bg-white" onchange="updateAll()">
+                <option value="✅">✅</option>
+                <option value="🟡 Parcial">🟡</option>
+                <option value="❌ Pendente">❌</option>
+            </select>
+        `;
+        cContainer.appendChild(div);
+    });
+}
+
+function updateAll() {
+    const title = document.getElementById('handoffTitle').value;
+    const resp = document.getElementById('responsible').value;
+    const journey = document.getElementById('journey').value;
+    const previewEl = document.getElementById('preview');
+
+    let text = `*${title}*\n`;
+    text += `👤 *Resp:* ${resp}\n`;
+    text += `🕒 *Jornada:* ${journey}\n\n`;
+
+    text += `*STATUS DAS ROTAS XPT:*\n`;
+    const routeSelects = document.querySelectorAll('.route-status');
+    routeData.forEach((r, i) => {
+        text += `🚚 *${r.code}* (${r.time}): ${routeSelects[i].value}\n`;
+    });
+
+    text += `\n*CHECKLIST OPERACIONAL:*\n`;
+    const checkSelects = document.querySelectorAll('.check-status');
+    checklistData.forEach((c, i) => {
+        text += `${c.icon} ${c.label}: *${checkSelects[i].value}*\n`;
+    });
+
+    const t1 = document.getElementById('obsT1T2').value;
+    if(t1) text += `\n*T1 > T2:* ${t1}`;
+    
+    const t2 = document.getElementById('obsT2T3').value;
+    if(t2) text += `\n*T2 > T3:* ${t2}`;
+
+    previewEl.textContent = text;
+    return text;
+}
+
+async function copyReport() {
+    const text = updateAll();
+    await navigator.clipboard.writeText(text);
+    alert("Copiado!");
+}
+
+function openWhatsApp() {
+    const text = updateAll();
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderFields();
+    updateAll(); // Gera a prévia inicial
+});
+</script>
+</body>
+</html>
