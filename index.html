@@ -1,461 +1,174 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Report Operacional SPA1 T2</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<style>
-:root {
-  --bg: #f0f2f5;
-  --surface: #ffffff;
-  --surface2: #f7f8fa;
-  --border: #e0e0e0;
-  --text: #1a1a2e;
-  --text2: #555;
-  --text3: #888;
-  --accent: #1a73e8;
-  --accent-h: #1558b0;
-  --divider: #e0e0e0;
-  --input-bg: #fafafa;
-  --report-bg: #f8f8f8;
-  --report-border: #e0e0e0;
-}
-[data-theme="dark"] {
-  --bg: #0f1117;
-  --surface: #1e2028;
-  --surface2: #16181f;
-  --border: #2e3040;
-  --text: #e8eaf0;
-  --text2: #aab0c0;
-  --text3: #6b7280;
-  --accent: #4d8ef0;
-  --accent-h: #3a7de8;
-  --divider: #2a2d3a;
-  --input-bg: #12141a;
-  --report-bg: #12141a;
-  --report-border: #2a2d3a;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.25s, color 0.25s; }
-
-.header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 13px 24px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-.header-left h1 { font-size: 20px; font-weight: 700; }
-.header-left p { font-size: 13px; color: var(--text3); margin-top: 2px; }
-.header-right { display: flex; align-items: center; gap: 8px; }
-.analyst-name { font-size: 13px; font-weight: 600; color: var(--text3); }
-
-.btn { border: none; padding: 8px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s, transform 0.1s; }
-.btn:active { transform: scale(0.97); }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-h); }
-.btn-primary:disabled { background: #888; cursor: not-allowed; }
-.btn-theme { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); font-size: 17px; padding: 6px 11px; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
-.btn-theme:hover { background: var(--border); }
-
-.toast { position: fixed; top: 18px; right: 18px; background: #25a244; color: #fff; padding: 11px 18px; border-radius: 9px; font-weight: 600; font-size: 14px; z-index: 9999; opacity: 0; pointer-events: none; transform: translateY(-8px); transition: opacity 0.3s, transform 0.3s; }
-.toast.show { opacity: 1; transform: translateY(0); }
-
-.tabs { display: flex; background: var(--surface); border-bottom: 2px solid var(--border); padding: 0 24px; overflow-x: auto; }
-.tab { padding: 13px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text3); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; white-space: nowrap; }
-.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-.tab:hover:not(.active) { color: var(--text2); }
-
-.panel { display: none; padding: 18px 24px 6px; max-width: 860px; margin: 0 auto; }
-.panel.active { display: block; }
-
-.sec-title { font-size: 12px; font-weight: 700; color: var(--text3); margin: 14px 0 9px; padding-bottom: 5px; border-bottom: 1.5px solid var(--divider); text-transform: uppercase; letter-spacing: 0.5px; }
-.card { background: var(--surface); border-radius: 10px; border: 1px solid var(--border); padding: 13px 15px; margin-bottom: 11px; transition: background 0.25s, border 0.25s; }
-.area-label { font-weight: 700; font-size: 13px; color: var(--text2); margin-bottom: 9px; }
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
-.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 11px; }
-.row-resp { display: grid; grid-template-columns: 3fr 1fr; gap: 11px; align-items: end; }
-
-.fl { font-size: 11px; color: var(--text3); font-weight: 600; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
-select, input[type="text"], input[type="number"] {
-  width: 100%; padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 7px;
-  font-size: 14px; background: var(--input-bg); color: var(--text);
-  transition: border 0.2s, background 0.25s, color 0.25s;
-}
-select:focus, input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
-.divider { height: 1px; background: var(--divider); margin: 12px 0; }
-
-.reports-wrap { background: var(--surface2); border-top: 2px solid var(--divider); padding: 18px 24px 36px; margin-top: 6px; transition: background 0.25s; }
-.reports-inner { max-width: 860px; margin: 0 auto; }
-.reports-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-.rc { background: var(--surface); border-radius: 10px; border: 1px solid var(--border); overflow: hidden; transition: background 0.25s, border 0.25s; }
-.rc-head { padding: 10px 13px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 13px; color: var(--text2); background: var(--surface2); transition: background 0.25s; }
-.rc-body { padding: 11px 13px; }
-textarea.rtext {
-  width: 100%; border: 1.5px solid var(--report-border); border-radius: 7px;
-  font-size: 12px; font-family: 'Courier New', monospace;
-  background: var(--report-bg); color: var(--text); padding: 9px 10px;
-  resize: vertical; min-height: 185px; transition: background 0.25s, color 0.25s, border 0.25s;
-}
-textarea.rtext:focus { outline: none; border-color: var(--accent); }
-.copy-btn { display: block; width: 100%; margin-top: 8px; padding: 10px; background: #25D366; color: #fff; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.1s; }
-.copy-btn:hover { background: #1da84e; }
-.copy-btn:active { transform: scale(0.98); }
-.copy-btn.copied { background: var(--accent) !important; }
-
-@media (max-width: 680px) {
-  .reports-grid { grid-template-columns: 1fr; }
-  .row3 { grid-template-columns: 1fr 1fr; }
-  .row-resp { grid-template-columns: 1fr; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report - Passagem de Turno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        select { cursor: pointer; }
+    </style>
 </head>
-<body>
+<body class="bg-slate-100 min-h-screen pb-10">
 
-<div id="toast" class="toast"></div>
+<div class="max-w-3xl mx-auto px-4 py-6">
+    <header class="text-center mb-6">
+        <h1 class="text-2xl font-extrabold text-slate-800">📋 Checklist Operacional</h1>
+        <p class="text-slate-500 text-sm">Analista: Ezequiel Miranda </p>
+    </header>
 
-<div class="header">
-  <div class="header-left">
-    <h1>📋 Report Operacional SPA1</h1>
-    <p>Analista: <strong>Ezequiel Miranda</strong></p>
-  </div>
-  <div class="header-right">
-    <span class="analyst-name">Ezequiel Miranda</span>
-    <button class="btn-theme" id="themeBtn" onclick="toggleTheme()" title="Alternar tema claro/escuro">🌙</button>
-    <button class="btn btn-primary" id="syncBtn" onclick="syncFromCloud()">🔄 Sincronizar</button>
-  </div>
-</div>
+    <div class="space-y-4">
+        <section class="bg-white rounded-xl p-5 card border-t-4 border-slate-800">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Informações Gerais</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input id="responsible" value="Gestor" oninput="updateAll()" class="border rounded-lg p-2 bg-slate-50 text-sm">
+                <input id="journey" value="12:00 🕑 20:20" oninput="updateAll()" class="border rounded-lg p-2 bg-slate-50 text-sm">
+                <input id="handoffTitle" value="Passagem de Turno T2 ⏩ T3" oninput="updateAll()" class="md:col-span-2 border rounded-lg p-2 bg-slate-50 text-sm font-bold">
+            </div>
+        </section>
 
-<div class="tabs">
-  <div class="tab active" onclick="showTab('layout',this)">🏭 Layout</div>
-  <div class="tab" onclick="showTab('operacional',this)">👷 Operacional</div>
-  <div class="tab" onclick="showTab('presenca',this)">📝 Presença</div>
-</div>
+        <section class="bg-white rounded-xl p-5 card border-t-4 border-blue-500">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-blue-500 mb-4">Status das Rotas</h2>
+            <div id="routesContainer" class="space-y-2">
+                </div>
+        </section>
 
-<!-- ABA LAYOUT -->
-<div id="tab-layout" class="panel active">
-  <div id="layout-areas"></div>
-</div>
+        <section class="bg-white rounded-xl p-5 card border-t-4 border-emerald-500">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-4">Checklist Operacional</h2>
+            <div id="checklistContainer" class="space-y-2">
+                </div>
+        </section>
 
-<!-- ABA OPERACIONAL -->
-<div id="tab-operacional" class="panel">
-  <div class="sec-title">Responsáveis e Status</div>
-  <div id="op-rows"></div>
-</div>
+        <section class="bg-white rounded-xl p-5 card border-t-4 border-amber-500">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-amber-500 mb-4">Observações</h2>
+            <textarea id="obsT1T2" oninput="updateAll()" placeholder="Notas T1 > T2..." class="w-full border rounded-lg p-2 h-16 mb-2 bg-slate-50 text-sm"></textarea>
+            <textarea id="obsT2T3" oninput="updateAll()" placeholder="Notas T2 > T3..." class="w-full border rounded-lg p-2 h-16 bg-slate-50 text-sm"></textarea>
+        </section>
 
-<!-- ABA PRESENÇA -->
-<div id="tab-presenca" class="panel">
-  <div class="sec-title">Dados de PSs</div>
-  <div class="card">
-    <div class="row2">
-      <div><label class="fl">✅ PSs Presentes</label><input type="number" id="pss_p" value="0" oninput="save('pss_p')"></div>
-      <div><label class="fl">✅ PSs de Folga</label><input type="number" id="pss_f" value="0" oninput="save('pss_f')"></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <button onclick="updateAll()" class="bg-slate-800 text-white font-bold py-3 rounded-xl active:scale-95 transition-all">🔄 Gerar Prévia</button>
+            <button onclick="copyReport()" class="bg-blue-600 text-white font-bold py-3 rounded-xl active:scale-95 transition-all">📄 Copiar</button>
+            <button onclick="openWhatsApp()" class="bg-emerald-600 text-white font-bold py-3 rounded-xl active:scale-95 transition-all">📱 WhatsApp</button>
+        </div>
+
+        <div class="mt-4">
+            <label class="text-xs font-bold text-slate-400 uppercase">Prévia do Relatório:</label>
+            <pre id="preview" class="mt-2 p-4 bg-white rounded-lg border text-[13px] text-slate-700 whitespace-pre-wrap font-sans card"></pre>
+        </div>
     </div>
-  </div>
-  <div class="divider"></div>
-  <div class="sec-title">Dados Gerais</div>
-  <div class="card"><div class="row3" id="presenca-grid"></div></div>
-</div>
-
-<!-- RELATÓRIOS — sempre visível -->
-<div class="reports-wrap">
-  <div class="reports-inner">
-    <div class="sec-title">🚀 Gerar Relatórios</div>
-    <div class="reports-grid">
-      <div class="rc">
-        <div class="rc-head">1. Layout</div>
-        <div class="rc-body">
-          <textarea class="rtext" id="txt_layout" readonly></textarea>
-          <button class="copy-btn" onclick="copyText('txt_layout',this)">COPIAR LAYOUT 📲</button>
-        </div>
-      </div>
-      <div class="rc">
-        <div class="rc-head">2. Operacional</div>
-        <div class="rc-body">
-          <textarea class="rtext" id="txt_operacional" readonly></textarea>
-          <button class="copy-btn" onclick="copyText('txt_operacional',this)">COPIAR OPERACIONAL 📲</button>
-        </div>
-      </div>
-      <div class="rc">
-        <div class="rc-head">3. Presença</div>
-        <div class="rc-body">
-          <textarea class="rtext" id="txt_presenca" readonly></textarea>
-          <button class="copy-btn" onclick="copyText('txt_presenca',this)">COPIAR PRESENÇA 📲</button>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
-// ---- FIREBASE ----
-firebase.initializeApp({ databaseURL: "https://hhinventario-default-rtdb.firebaseio.com" });
-var dbRef = firebase.database().ref("reports/atual");
-
-// ---- STATE ----
-var formData = {};
-var domReady = false;
-
-// ---- THEME ----
-function toggleTheme() {
-  var html = document.documentElement;
-  var dark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', dark ? 'light' : 'dark');
-  document.getElementById('themeBtn').textContent = dark ? '🌙' : '☀️';
-  localStorage.setItem('spa1_theme', dark ? 'light' : 'dark');
-}
-(function(){
-  var t = localStorage.getItem('spa1_theme') || 'light';
-  document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('DOMContentLoaded', function(){
-    document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
-  });
-})();
-
-// ---- HELPERS ----
-var statusOpts = [{v:'🔴',l:'🔴 Não iniciado'},{v:'🟡',l:'🟡 Em andamento'},{v:'🟢',l:'🟢 Finalizado'}];
-
-function mkLabel(txt) {
-  var l = document.createElement('label'); l.className = 'fl'; l.textContent = txt; return l;
-}
-
-function makeSelect(id, val, onch) {
-  var s = document.createElement('select'); s.id = id; s.onchange = onch;
-  statusOpts.forEach(function(o){
-    var opt = document.createElement('option'); opt.value = o.v; opt.textContent = o.l;
-    if (o.v === (val || '🟡')) opt.selected = true;
-    s.appendChild(opt);
-  });
-  return s;
-}
-
-// ---- BUILD LAYOUT (uma vez só) ----
-var layoutAreas = [['gx','Gaiolas XPT'],['vx','Volumoso XPT'],['gs','Gaiolas SVC'],['vs','Volumoso SVC'],['go','Goleiro']];
-function buildLayout() {
-  var cont = document.getElementById('layout-areas'); cont.innerHTML = '';
-  layoutAreas.forEach(function(a){
-    var k=a[0], lbl=a[1];
-    var card=document.createElement('div'); card.className='card';
-    var al=document.createElement('div'); al.className='area-label'; al.textContent=lbl;
-    var row=document.createElement('div'); row.className='row2';
-    var d1=document.createElement('div'), d2=document.createElement('div');
-    d1.appendChild(mkLabel('Org. Ruas'));
-    d1.appendChild(makeSelect(k+'_o', formData[k+'_o']||'🟡', (function(key){return function(){save(key);};})(k+'_o')));
-    d2.appendChild(mkLabel('Etiq. QRs'));
-    d2.appendChild(makeSelect(k+'_q', formData[k+'_q']||'🟡', (function(key){return function(){save(key);};})(k+'_q')));
-    row.appendChild(d1); row.appendChild(d2);
-    card.appendChild(al); card.appendChild(row); cont.appendChild(card);
-  });
-}
-
-// ---- BUILD OPERACIONAL (uma vez só) ----
-var opRows = [
-  ['d','Devolução XPT','Luis Felipe'],['s','Sem Identificação','Dharlyson'],
-  ['a','Avarias','Ney'],['e','Etiquetagem / Montagem de HU Reversa','Ney'],
-  ['b','Tratativas Backlog Pacotinho / Volumoso','Ney'],['r','Retorno Estação','Ney / Rauan'],
-  ['inv','Inventário','']
+// Dados Iniciais
+const routeData = [
+    {code:"EPA4", time:"11:00-13:00"},
+    {code:"EPA5", time:"12:00-14:00"},
+    {code:"ETO4", time:"13:00-15:30"},
+    {code:"EPA7", time:"13:00-15:30"},
+    {code:"EPA3", time:"14:00-16:30"},
+    {code:"EPA8", time:"14:00-16:30"}
 ];
-function buildOperacional() {
-  var cont = document.getElementById('op-rows'); cont.innerHTML = '';
-  opRows.forEach(function(op){
-    var k=op[0], lbl=op[1], def=op[2];
-    var card=document.createElement('div'); card.className='card';
-    var row=document.createElement('div'); row.className='row-resp';
-    var dn=document.createElement('div'), ds=document.createElement('div');
-    var inp=document.createElement('input'); inp.type='text'; inp.id=k+'_n';
-    inp.placeholder=def; inp.value=formData[k+'_n']||'';
-    inp.oninput=(function(key){return function(){save(key);};})(k+'_n');
-    dn.appendChild(mkLabel(lbl)); dn.appendChild(inp);
-    ds.appendChild(mkLabel('Status'));
-    ds.appendChild(makeSelect(k+'_s', formData[k+'_s']||'🟡', (function(key){return function(){save(key);};})(k+'_s')));
-    row.appendChild(dn); row.appendChild(ds); card.appendChild(row); cont.appendChild(card);
-  });
+
+const checklistData = [
+    {icon:"🔄", label:"5S da Operação"},
+    {icon:"⛓️", label:"Envio do Forms"},
+    {icon:"📊", label:"Status Pacotes"},
+    {icon:"✉️", label:"QR's Próximo Ciclo AM"},
+    {icon:"🪙", label:"Tratativa Devolução XPT"},
+    {icon:"🧹", label:"Organização Geral"},
+    {icon:"📦", label:"Tratativas Volumoso"},
+    {icon:"🏗️", label:"Baixa de MPs"}
+];
+
+function renderFields() {
+    // Renderizar Rotas
+    const rContainer = document.getElementById('routesContainer');
+    routeData.forEach(r => {
+        const div = document.createElement('div');
+        div.className = "flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-200";
+        div.innerHTML = `
+            <div class="flex flex-col">
+                <span class="text-sm font-bold text-slate-800">🚚 ${r.code}</span>
+                <span class="text-[10px] text-slate-500 uppercase">${r.time}</span>
+            </div>
+            <select class="route-status border rounded p-1 text-sm bg-white" onchange="updateAll()">
+                <option value="✅">✅ OK</option>
+                <option value="🟡">🟡 ATRASADO</option>
+                <option value="❌">❌ CANCELADO</option>
+            </select>
+        `;
+        rContainer.appendChild(div);
+    });
+
+    // Renderizar Checklist
+    const cContainer = document.getElementById('checklistContainer');
+    checklistData.forEach(c => {
+        const div = document.createElement('div');
+        div.className = "flex items-center justify-between p-2 border-b border-slate-100 last:border-0";
+        div.innerHTML = `
+            <div class="flex items-center gap-2 text-sm text-slate-700">
+                <span>${c.icon}</span>
+                <span>${c.label}</span>
+            </div>
+            <select class="check-status border rounded p-1 text-sm bg-white" onchange="updateAll()">
+                <option value="✅">✅</option>
+                <option value="🟡 Parcial">🟡</option>
+                <option value="❌ Pendente">❌</option>
+            </select>
+        `;
+        cContainer.appendChild(div);
+    });
 }
 
-// ---- BUILD PRESENÇA (uma vez só) ----
-var presFields = [['p1','Presentes (Log)',50],['p2','Diaristas Sol.',12],['p3','Diaristas Pres.',12],
-  ['p4','Atestados',1],['p5','Faltas',8],['p6','Pulmão',1],['p7','Folgas',8],['p8','Suspensões',0]];
-function buildPresenca() {
-  var g = document.getElementById('presenca-grid'); g.innerHTML = '';
-  presFields.forEach(function(c){
-    var k=c[0], lbl=c[1], def=c[2];
-    var d=document.createElement('div');
-    var inp=document.createElement('input'); inp.type='number'; inp.id=k;
-    inp.value = formData[k] !== undefined ? formData[k] : def;
-    inp.oninput=(function(key){return function(){save(key);};})(k);
-    d.appendChild(mkLabel(lbl)); d.appendChild(inp); g.appendChild(d);
-  });
+function updateAll() {
+    const title = document.getElementById('handoffTitle').value;
+    const resp = document.getElementById('responsible').value;
+    const journey = document.getElementById('journey').value;
+    const previewEl = document.getElementById('preview');
+
+    let text = `*${title}*\n`;
+    text += `👤 *Resp:* ${resp}\n`;
+    text += `🕒 *Jornada:* ${journey}\n\n`;
+
+    text += `*STATUS DAS ROTAS XPT:*\n`;
+    const routeSelects = document.querySelectorAll('.route-status');
+    routeData.forEach((r, i) => {
+        text += `🚚 *${r.code}* (${r.time}): ${routeSelects[i].value}\n`;
+    });
+
+    text += `\n*CHECKLIST OPERACIONAL:*\n`;
+    const checkSelects = document.querySelectorAll('.check-status');
+    checklistData.forEach((c, i) => {
+        text += `${c.icon} ${c.label}: *${checkSelects[i].value}*\n`;
+    });
+
+    const t1 = document.getElementById('obsT1T2').value;
+    if(t1) text += `\n*T1 > T2:* ${t1}`;
+    
+    const t2 = document.getElementById('obsT2T3').value;
+    if(t2) text += `\n*T2 > T3:* ${t2}`;
+
+    previewEl.textContent = text;
+    return text;
 }
 
-// ---- ATUALIZA CAMPOS SEM RECONSTRUIR O DOM ----
-// Só atualiza um campo se ele não está com foco (usuário não está digitando nele)
-function updateFieldSafe(key, val) {
-  var el = document.getElementById(key);
-  if (!el) return;
-  // Não sobrescreve se o campo está com foco
-  if (document.activeElement === el) return;
-  el.value = val;
+async function copyReport() {
+    const text = updateAll();
+    await navigator.clipboard.writeText(text);
+    alert("Copiado!");
 }
 
-function applyDataToFields(data) {
-  // Layout selects
-  layoutAreas.forEach(function(a){
-    var k = a[0];
-    if (data[k+'_o'] !== undefined) updateFieldSafe(k+'_o', data[k+'_o']);
-    if (data[k+'_q'] !== undefined) updateFieldSafe(k+'_q', data[k+'_q']);
-  });
-  // Operacional
-  opRows.forEach(function(op){
-    var k = op[0];
-    if (data[k+'_n'] !== undefined) updateFieldSafe(k+'_n', data[k+'_n']);
-    if (data[k+'_s'] !== undefined) updateFieldSafe(k+'_s', data[k+'_s']);
-  });
-  // Presença
-  ['pss_p','pss_f'].forEach(function(k){
-    if (data[k] !== undefined) updateFieldSafe(k, data[k]);
-  });
-  presFields.forEach(function(c){
-    var k = c[0];
-    if (data[k] !== undefined) updateFieldSafe(k, data[k]);
-  });
+function openWhatsApp() {
+    const text = updateAll();
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
-// ---- TABS ----
-function showTab(name, el) {
-  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  document.getElementById('tab-'+name).classList.add('active');
-  el.classList.add('active');
-}
-
-// ---- SAVE (debounce — pausa o listener remoto durante a digitação) ----
-var saveTimers = {};
-var remoteListenerPaused = false;
-var pauseTimer = null;
-
-function save(key) {
-  var el = document.getElementById(key); if (!el) return;
-  formData[key] = el.value;
-  generateReports();
-
-  // Pausa a aplicação de dados remotos enquanto o usuário digita
-  remoteListenerPaused = true;
-  clearTimeout(pauseTimer);
-  pauseTimer = setTimeout(function(){ remoteListenerPaused = false; }, 2000);
-
-  clearTimeout(saveTimers[key]);
-  saveTimers[key] = setTimeout(function(){ dbRef.update(formData); }, 600);
-}
-
-// ---- LOAD INICIAL (constrói o DOM com os dados) ----
-function getDefault(k){ var d={pss_p:0,pss_f:0,p1:50,p2:12,p3:12,p4:1,p5:8,p6:1,p7:8,p8:0}; return d[k]!==undefined?d[k]:0; }
-
-function initialLoad(data) {
-  if (!data) return;
-  formData = JSON.parse(JSON.stringify(data));
-  // Constrói o DOM uma única vez com os dados já preenchidos
-  buildLayout(); buildOperacional(); buildPresenca();
-  var el;
-  ['pss_p','pss_f'].forEach(function(k){
-    el = document.getElementById(k);
-    if (el) el.value = data[k] !== undefined ? data[k] : 0;
-  });
-  generateReports();
-  domReady = true;
-}
-
-// ---- SYNC MANUAL ----
-function syncFromCloud() {
-  var btn = document.getElementById('syncBtn');
-  btn.disabled=true; btn.textContent='⏳ Sincronizando...';
-  dbRef.once('value').then(function(snap){
-    var d = snap.val();
-    if (d) {
-      formData = JSON.parse(JSON.stringify(d));
-      // Sync manual sempre aplica tudo (usuário pediu explicitamente)
-      buildLayout(); buildOperacional(); buildPresenca();
-      ['pss_p','pss_f'].forEach(function(k){
-        var el = document.getElementById(k);
-        if (el) el.value = d[k] !== undefined ? d[k] : 0;
-      });
-      generateReports();
-      showToast('☁️ Sincronizado com sucesso! ✅');
-    } else {
-      showToast('⚠️ Nenhum dado na nuvem.');
-    }
-    btn.disabled=false; btn.textContent='🔄 Sincronizar';
-  }).catch(function(){
-    showToast('❌ Erro ao sincronizar.');
-    btn.disabled=false; btn.textContent='🔄 Sincronizar';
-  });
-}
-
-// ---- TOAST ----
-function showToast(msg) {
-  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 3000);
-}
-
-// ---- REPORTS ----
-function gv(k, def) { var v=formData[k]; return (v!==undefined&&v!==null&&v!=='') ? v : (def!==undefined?def:''); }
-function generateReports() {
-  var hoje = new Date().toLocaleDateString('pt-BR');
-  document.getElementById('txt_layout').value =
-    "*Status Layout*\n🔴 Não iniciado | 🟡 Em andamento | 🟢 Finalizado\n\n" +
-    "Gaiolas XPT: "+gv('gx_o','🟡')+" Org. Ruas | "+gv('gx_q','🟡')+" QRs\n" +
-    "Volumoso XPT: "+gv('vx_o','🟡')+" Org. Ruas | "+gv('vx_q','🟡')+" QRs\n" +
-    "Gaiolas SVC: "+gv('gs_o','🟡')+" Org. Ruas | "+gv('gs_q','🟡')+" QRs\n" +
-    "Volumoso SVC: "+gv('vs_o','🟡')+" Org. Ruas | "+gv('vs_q','🟡')+" QRs\n" +
-    "Goleiro: "+gv('go_o','🟡')+" Org. Ruas | "+gv('go_q','🟡')+" QRs";
-
-  document.getElementById('txt_operacional').value =
-    "*REPORT OPERACIONAL DE PSs T2 - Demandas (6 PSs)*\n📅 Data: "+hoje+"\n" +
-    "🔹 Devolução XPT: "+gv('d_n','Luis Felipe')+" "+gv('d_s','')+"\n" +
-    "🔹 Etiquetagem / Montagem de HU Reversa: "+gv('e_n','Ney')+" "+gv('e_s','')+"\n" +
-    "🔹 Avarias: "+gv('a_n','Ney')+" "+gv('a_s','')+"\n" +
-    "🔹 RTS: "+gv('r_n','Ney/Rauan')+" "+gv('r_s','')+"\n" +
-    "🔹 Sem Identificação: "+gv('s_n','Dharlyson')+" "+gv('s_s','')+"\n" +
-    "🔹 Tratativas Backlog Pacotinho / Volumoso: "+gv('b_n','Ney')+" "+gv('b_s','')+"\n" +
-    "🔹 Inventário: "+gv('inv_n','')+" "+gv('inv_s','');
-
-  document.getElementById('txt_presenca').value =
-    "*RESUMO DE PRESENÇA*\n" +
-    "✅ PSs Presentes: "+gv('pss_p',0)+"\n" +
-    "✅ PSs de Folga: "+gv('pss_f',0)+"\n" +
-    "✅ Log: "+gv('p1',50)+" | ✅ Diaristas: "+gv('p3',12)+"/"+gv('p2',12)+"\n" +
-    "📄 Atestados: "+gv('p4',1)+" | ❌ Faltas: "+gv('p5',8)+"\n" +
-    "🫁 Pulmão: "+gv('p6',1)+" | 🛌 Folgas: "+gv('p7',8)+"\n" +
-    "⚠ Suspensões: "+gv('p8',0);
-}
-
-// ---- COPY ----
-function copyText(id, btn) {
-  var txt=document.getElementById(id).value, orig=btn.textContent;
-  navigator.clipboard.writeText(txt).then(function(){
-    btn.textContent='COPIADO! ✅'; btn.classList.add('copied');
-    setTimeout(function(){ btn.textContent=orig; btn.classList.remove('copied'); }, 2200);
-  }).catch(function(){ document.getElementById(id).select(); document.execCommand('copy'); showToast('Copiado! ✅'); });
-}
-
-// ---- INIT ----
-// Primeiro carrega uma vez via once() para montar o DOM, depois liga o listener em tempo real
-buildLayout(); buildOperacional(); buildPresenca(); generateReports();
-
-dbRef.once('value').then(function(snap){
-  var d = snap.val();
-  if (d) initialLoad(d);
-  domReady = true;
-
-  // Listener em tempo real — só atualiza campos individuais sem reconstruir o DOM
-  dbRef.on('value', function(snap){
-    var d = snap.val();
-    if (!d || !domReady) return;
-    // Se o usuário está digitando, não sobrescreve nada (exceto o formData interno)
-    // Os campos com foco são protegidos por updateFieldSafe
-    if (!remoteListenerPaused) {
-      // Atualiza formData com dados remotos, preservando campos em foco
-      Object.keys(d).forEach(function(k){ formData[k] = d[k]; });
-      applyDataToFields(d);
-      generateReports();
-    }
-  });
+document.addEventListener('DOMContentLoaded', () => {
+    renderFields();
+    updateAll(); // Gera a prévia inicial
 });
 </script>
 </body>
